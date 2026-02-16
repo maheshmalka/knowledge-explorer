@@ -564,39 +564,24 @@
       contentSection.scrollIntoView({ behavior: 'smooth' });
 
       try {
-        const response = await fetch('https://api.anthropic.com/v1/messages', {
+        const response = await fetch('/api/generate', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
-            model: 'claude-sonnet-4-20250514',
-            max_tokens: 1000,
-            messages: [{
-              role: 'user',
-              content: `Create an educational explanation about "${selectedTopic}" at a ${selectedLevel} level. 
-              
-              Structure your response as follows:
-              1. Start with a clear, engaging introduction appropriate for the ${selectedLevel} level
-              2. Cover 3-4 key concepts or aspects
-              3. Include relevant examples
-              4. End with practical takeaways or next steps
-              
-              Adjust the depth, vocabulary, and technical detail based on the level:
-              - Basic: Simple language, everyday analogies, foundational concepts only
-              - Intermediate: More technical terms, assumes basic knowledge, deeper explanations
-              - Advanced: Technical language, complex concepts, assumes strong foundation
-              - Expert: Highly technical, cutting-edge topics, assumes expert background
-              
-              Format your response in clean HTML with appropriate headings and paragraphs. Use <h3> for section headers and <p> for paragraphs.`
-            }]
+            topic: selectedTopic,
+            level: selectedLevel
           })
         });
 
         const data = await response.json();
-        const content = data.content
-          .map(item => item.type === 'text' ? item.text : '')
-          .join('\n');
+        
+        if (!response.ok) {
+          throw new Error(data.error || 'Failed to generate content');
+        }
+        
+        const content = data.content;
 
         contentArea.innerHTML = `
           <div class="content-header">
