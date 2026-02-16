@@ -1,63 +1,54 @@
 module.exports = async function (context, req) {
-  context.log('HTTP trigger function processed a request.');
-
-  // Add CORS headers
   context.res.headers = {
-    'Content-Type': 'application/json',
     'Access-Control-Allow-Origin': '*',
-    'Access-Control-Allow-Methods': 'POST, OPTIONS',
-    'Access-Control-Allow-Headers': 'Content-Type'
+    'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+    'Access-Control-Allow-Headers': 'Content-Type',
+    'Content-Type': 'application/json'
   };
 
-  // Handle OPTIONS
   if (req.method === 'OPTIONS') {
     context.res.status = 200;
-    return;
-  }
-
-  const { topic, level } = req.body || {};
-
-  if (!topic || !level) {
-    context.res = {
-      status: 400,
-      body: { error: 'Topic and level are required' }
-    };
-    return;
-  }
-
-  const apiKey = process.env.GOOGLE_API_KEY;
-  if (!apiKey) {
-    context.res = {
-      status: 500,
-      body: { error: 'API key not configured' }
-    };
+    context.res.body = {};
     return;
   }
 
   try {
+    const { topic, level } = (req.body || {});
+
+    if (!topic || !level) {
+      context.res.status = 400;
+      context.res.body = { error: 'Missing topic or level' };
+      return;
+    }
+
+    const apiKey = process.env.GOOGLE_API_KEY;
+    if (!apiKey) {
+      context.res.status = 500;
+      context.res.body = { error: 'API key not configured' };
+      return;
+    }
+
     const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-lite:generateContent?key=${apiKey}`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         contents: [{
           parts: [{
             text: `Create an educational explanation about "${topic}" at a ${level} level. 
           
           Structure your response as follows:
-          1. Start with a clear, engaging introduction appropriate for the ${level} level
-          2. Cover 3-4 key concepts or aspects
+          1. Start with a clear, engaging introduction
+          2. Cover 3-4 key concepts
           3. Include relevant examples
-          4. End with practical takeaways or next steps
+          4. End with practical takeaways
           
-          Adjust the depth, vocabulary, and technical detail based on the level:
-          - Basic: Simple language, everyday analogies, foundational concepts only
-          - Intermediate: More technical terms, assumes basic knowledge, deeper explanations
-          - Advanced: Technical language, complex concepts, assumes strong foundation
-          - Expert: Highly technical, cutting-edge topics, assumes expert background
+          Adjust depth based on level:
+          - Basic: Simple language, everyday analogies
+          - Intermediate: More technical terms, deeper explanations
+          - Advanced: Technical language, complex concepts
+          - Expert: Highly technical, cutting-edge topics
           
-          Format your response in clean HTML with appropriate headings and paragraphs. Use <h3> for section headers and <p> for paragraphs.`
+          Format as HTML with <h3> headers and <p> paragraphs.`
           }]
         }]
       })
@@ -66,24 +57,19 @@ module.exports = async function (context, req) {
     const data = await response.json();
 
     if (!response.ok) {
-      context.res = {
-        status: response.status,
-        body: { error: data.error?.message || 'API request failed' }
-      };
+      context.res.status = response.status;
+      context.res.body = { error: data.error?.message || 'API failed' };
       return;
     }
 
-    const content = data.candidates?.[0]?.content?.parts?.[0]?.text || 'No response generated';
+    const content = data.candidates?.[0]?.content?.parts?.[0]?.text || 'No response';
 
-    context.res = {
-      status: 200,
-      body: { content }
-    };
+    context.res.status = 200;
+    context.res.body = { content };
+
   } catch (error) {
     context.log('Error:', error);
-    context.res = {
-      status: 500,
-      body: { error: 'Failed to generate content' }
-    };
+    context.res.status = 500;
+    context.res.body = { error: error.message };
   }
 };

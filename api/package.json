@@ -1,0 +1,7 @@
+{
+  "name": "knowledge-explorer-api",
+  "version": "1.0.0",
+  "description": "API for Knowledge Explorer",
+  "main": "generate/index.js",
+  "dependencies": {}
+}
