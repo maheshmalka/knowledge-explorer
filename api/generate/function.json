@@ -9,8 +9,7 @@
         "get",
         "post",
         "options"
-      ],
-      "route": "generate"
+      ]
     },
     {
       "type": "http",
