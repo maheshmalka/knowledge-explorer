@@ -1,0 +1,12 @@
+node_modules/
+.env
+config.js
+*.log
+.vscode/
+bin/
+obj/
+*.user
+*.suo
+.vs/
+wwwroot/config.js
+
