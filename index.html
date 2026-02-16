@@ -1,0 +1,629 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Knowledge Explorer</title>
+  <link href="https://fonts.googleapis.com/css2?family=Crimson+Pro:wght@400;600;700&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --primary: #1a3a52;
+      --secondary: #d4af37;
+      --accent: #c85a54;
+      --bg-light: #faf8f3;
+      --bg-card: #ffffff;
+      --text-primary: #2c3e50;
+      --text-secondary: #546e7a;
+      --border: #e0d5c7;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: linear-gradient(135deg, #faf8f3 0%, #f0ebe3 100%);
+      color: var(--text-primary);
+      min-height: 100vh;
+      position: relative;
+      overflow-x: hidden;
+    }
+
+    body::before {
+      content: '';
+      position: fixed;
+      top: -50%;
+      right: -20%;
+      width: 800px;
+      height: 800px;
+      background: radial-gradient(circle, rgba(212, 175, 55, 0.08) 0%, transparent 70%);
+      border-radius: 50%;
+      pointer-events: none;
+      animation: float 20s ease-in-out infinite;
+    }
+
+    body::after {
+      content: '';
+      position: fixed;
+      bottom: -40%;
+      left: -15%;
+      width: 600px;
+      height: 600px;
+      background: radial-gradient(circle, rgba(26, 58, 82, 0.06) 0%, transparent 70%);
+      border-radius: 50%;
+      pointer-events: none;
+      animation: float 25s ease-in-out infinite reverse;
+    }
+
+    @keyframes float {
+      0%, 100% { transform: translate(0, 0) scale(1); }
+      50% { transform: translate(-30px, 30px) scale(1.1); }
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 3rem 2rem;
+      position: relative;
+      z-index: 1;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 4rem;
+      animation: fadeInDown 0.8s ease-out;
+    }
+
+    @keyframes fadeInDown {
+      from {
+        opacity: 0;
+        transform: translateY(-30px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    h1 {
+      font-family: 'Crimson Pro', serif;
+      font-size: 3.5rem;
+      font-weight: 700;
+      color: var(--primary);
+      margin-bottom: 0.5rem;
+      letter-spacing: -0.02em;
+    }
+
+    .subtitle {
+      font-size: 1.1rem;
+      color: var(--text-secondary);
+      font-weight: 400;
+    }
+
+    .search-section {
+      background: var(--bg-card);
+      border-radius: 20px;
+      padding: 2.5rem;
+      box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
+      margin-bottom: 3rem;
+      border: 2px solid var(--border);
+      animation: fadeInUp 0.8s ease-out 0.2s both;
+    }
+
+    @keyframes fadeInUp {
+      from {
+        opacity: 0;
+        transform: translateY(30px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .search-box {
+      position: relative;
+      margin-bottom: 2rem;
+    }
+
+    .search-input {
+      width: 100%;
+      padding: 1.2rem 1.5rem;
+      font-size: 1.1rem;
+      border: 2px solid var(--border);
+      border-radius: 12px;
+      font-family: 'DM Sans', sans-serif;
+      transition: all 0.3s ease;
+      background: var(--bg-light);
+    }
+
+    .search-input:focus {
+      outline: none;
+      border-color: var(--secondary);
+      box-shadow: 0 0 0 4px rgba(212, 175, 55, 0.1);
+    }
+
+    .topic-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 1rem;
+      margin-bottom: 2rem;
+    }
+
+    .topic-chip {
+      padding: 1rem 1.5rem;
+      background: var(--bg-light);
+      border: 2px solid var(--border);
+      border-radius: 12px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      text-align: center;
+      font-weight: 500;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .topic-chip::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(212, 175, 55, 0.2), transparent);
+      transition: left 0.5s ease;
+    }
+
+    .topic-chip:hover {
+      border-color: var(--secondary);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+
+    .topic-chip:hover::before {
+      left: 100%;
+    }
+
+    .topic-chip.selected {
+      background: var(--primary);
+      color: white;
+      border-color: var(--primary);
+    }
+
+    .level-section {
+      margin-top: 2rem;
+      padding-top: 2rem;
+      border-top: 2px solid var(--border);
+      opacity: 0;
+      max-height: 0;
+      overflow: hidden;
+      transition: all 0.5s ease;
+    }
+
+    .level-section.active {
+      opacity: 1;
+      max-height: 500px;
+    }
+
+    .level-label {
+      font-family: 'Crimson Pro', serif;
+      font-size: 1.3rem;
+      font-weight: 600;
+      color: var(--primary);
+      margin-bottom: 1rem;
+      display: block;
+    }
+
+    .level-options {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 1rem;
+    }
+
+    .level-btn {
+      padding: 1.2rem 1.5rem;
+      background: white;
+      border: 2px solid var(--border);
+      border-radius: 12px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 1rem;
+      font-weight: 500;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .level-btn::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      height: 0;
+      background: var(--secondary);
+      transition: height 0.3s ease;
+      z-index: -1;
+    }
+
+    .level-btn:hover::after {
+      height: 100%;
+    }
+
+    .level-btn:hover {
+      color: var(--primary);
+      border-color: var(--secondary);
+    }
+
+    .level-btn.selected {
+      background: var(--accent);
+      color: white;
+      border-color: var(--accent);
+    }
+
+    .explore-btn {
+      margin-top: 2rem;
+      width: 100%;
+      padding: 1.3rem 2rem;
+      background: linear-gradient(135deg, var(--primary) 0%, #2a5a7a 100%);
+      color: white;
+      border: none;
+      border-radius: 12px;
+      font-size: 1.1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      font-family: 'DM Sans', sans-serif;
+      opacity: 0;
+      transform: translateY(10px);
+    }
+
+    .explore-btn.active {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .explore-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 20px rgba(26, 58, 82, 0.3);
+    }
+
+    .explore-btn:active {
+      transform: translateY(0);
+    }
+
+    .explore-btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .content-section {
+      background: var(--bg-card);
+      border-radius: 20px;
+      padding: 3rem;
+      box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
+      border: 2px solid var(--border);
+      display: none;
+      animation: fadeIn 0.6s ease-out;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    .content-section.active {
+      display: block;
+    }
+
+    .content-header {
+      margin-bottom: 2rem;
+      padding-bottom: 1.5rem;
+      border-bottom: 3px solid var(--secondary);
+    }
+
+    .content-title {
+      font-family: 'Crimson Pro', serif;
+      font-size: 2.5rem;
+      font-weight: 700;
+      color: var(--primary);
+      margin-bottom: 0.5rem;
+    }
+
+    .content-meta {
+      display: flex;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+
+    .meta-badge {
+      padding: 0.5rem 1rem;
+      background: var(--bg-light);
+      border-radius: 8px;
+      font-size: 0.9rem;
+      font-weight: 500;
+      color: var(--text-secondary);
+    }
+
+    .content-body {
+      font-family: 'DM Sans', sans-serif;
+      font-size: 1.1rem;
+      line-height: 1.8;
+      color: var(--text-primary);
+    }
+
+    .content-body h3 {
+      font-family: 'Crimson Pro', serif;
+      font-size: 1.8rem;
+      color: var(--primary);
+      margin-top: 2rem;
+      margin-bottom: 1rem;
+    }
+
+    .content-body p {
+      margin-bottom: 1.5rem;
+    }
+
+    .content-body ul, .content-body ol {
+      margin-left: 1.5rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .content-body li {
+      margin-bottom: 0.8rem;
+    }
+
+    .loading {
+      text-align: center;
+      padding: 3rem;
+      font-size: 1.1rem;
+      color: var(--text-secondary);
+    }
+
+    .spinner {
+      display: inline-block;
+      width: 40px;
+      height: 40px;
+      border: 4px solid var(--border);
+      border-top-color: var(--secondary);
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin-bottom: 1rem;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    .back-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.8rem 1.5rem;
+      background: var(--bg-light);
+      border: 2px solid var(--border);
+      border-radius: 10px;
+      cursor: pointer;
+      font-family: 'DM Sans', sans-serif;
+      font-weight: 500;
+      margin-bottom: 2rem;
+      transition: all 0.3s ease;
+    }
+
+    .back-btn:hover {
+      background: var(--primary);
+      color: white;
+      border-color: var(--primary);
+    }
+
+    @media (max-width: 768px) {
+      h1 {
+        font-size: 2.5rem;
+      }
+
+      .search-section {
+        padding: 1.5rem;
+      }
+
+      .topic-grid {
+        grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+      }
+
+      .content-section {
+        padding: 2rem 1.5rem;
+      }
+
+      .content-title {
+        font-size: 2rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>Knowledge Explorer</h1>
+      <p class="subtitle">Discover any topic at your perfect learning level</p>
+    </header>
+
+    <div class="search-section">
+      <div class="search-box">
+        <input 
+          type="text" 
+          class="search-input" 
+          id="searchInput"
+          placeholder="Search for any topic... (or choose from popular topics below)"
+        >
+      </div>
+
+      <div class="topic-grid" id="topicGrid">
+        <div class="topic-chip" data-topic="Quantum Mechanics">Quantum Mechanics</div>
+        <div class="topic-chip" data-topic="Machine Learning">Machine Learning</div>
+        <div class="topic-chip" data-topic="Climate Change">Climate Change</div>
+        <div class="topic-chip" data-topic="Photography">Photography</div>
+        <div class="topic-chip" data-topic="Philosophy">Philosophy</div>
+        <div class="topic-chip" data-topic="Blockchain">Blockchain</div>
+        <div class="topic-chip" data-topic="Astronomy">Astronomy</div>
+        <div class="topic-chip" data-topic="Economics">Economics</div>
+        <div class="topic-chip" data-topic="Psychology">Psychology</div>
+        <div class="topic-chip" data-topic="Art History">Art History</div>
+        <div class="topic-chip" data-topic="Neuroscience">Neuroscience</div>
+        <div class="topic-chip" data-topic="Cooking">Cooking</div>
+      </div>
+
+      <div class="level-section" id="levelSection">
+        <label class="level-label">Choose your learning level:</label>
+        <div class="level-options">
+          <button class="level-btn" data-level="basic">Basic</button>
+          <button class="level-btn" data-level="intermediate">Intermediate</button>
+          <button class="level-btn" data-level="advanced">Advanced</button>
+          <button class="level-btn" data-level="expert">Expert</button>
+        </div>
+      </div>
+
+      <button class="explore-btn" id="exploreBtn">Explore This Topic</button>
+    </div>
+
+    <div class="content-section" id="contentSection">
+      <button class="back-btn" id="backBtn">← Back to Search</button>
+      <div id="contentArea"></div>
+    </div>
+  </div>
+
+  <script>
+    let selectedTopic = '';
+    let selectedLevel = '';
+
+    const searchInput = document.getElementById('searchInput');
+    const topicChips = document.querySelectorAll('.topic-chip');
+    const levelSection = document.getElementById('levelSection');
+    const levelBtns = document.querySelectorAll('.level-btn');
+    const exploreBtn = document.getElementById('exploreBtn');
+    const contentSection = document.getElementById('contentSection');
+    const backBtn = document.getElementById('backBtn');
+    const contentArea = document.getElementById('contentArea');
+
+    // Topic selection
+    topicChips.forEach(chip => {
+      chip.addEventListener('click', () => {
+        topicChips.forEach(c => c.classList.remove('selected'));
+        chip.classList.add('selected');
+        selectedTopic = chip.dataset.topic;
+        searchInput.value = selectedTopic;
+        levelSection.classList.add('active');
+        updateExploreButton();
+      });
+    });
+
+    // Search input
+    searchInput.addEventListener('input', (e) => {
+      if (e.target.value.trim()) {
+        topicChips.forEach(c => c.classList.remove('selected'));
+        selectedTopic = e.target.value.trim();
+        levelSection.classList.add('active');
+        updateExploreButton();
+      } else {
+        selectedTopic = '';
+        levelSection.classList.remove('active');
+        updateExploreButton();
+      }
+    });
+
+    // Level selection
+    levelBtns.forEach(btn => {
+      btn.addEventListener('click', () => {
+        levelBtns.forEach(b => b.classList.remove('selected'));
+        btn.classList.add('selected');
+        selectedLevel = btn.dataset.level;
+        updateExploreButton();
+      });
+    });
+
+    function updateExploreButton() {
+      if (selectedTopic && selectedLevel) {
+        exploreBtn.classList.add('active');
+        exploreBtn.disabled = false;
+      } else {
+        exploreBtn.classList.remove('active');
+        exploreBtn.disabled = true;
+      }
+    }
+
+    // Explore button
+    exploreBtn.addEventListener('click', async () => {
+      contentArea.innerHTML = `
+        <div class="loading">
+          <div class="spinner"></div>
+          <p>Generating ${selectedLevel} level content about ${selectedTopic}...</p>
+        </div>
+      `;
+      contentSection.classList.add('active');
+      contentSection.scrollIntoView({ behavior: 'smooth' });
+
+      try {
+        const response = await fetch('https://api.anthropic.com/v1/messages', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            model: 'claude-sonnet-4-20250514',
+            max_tokens: 1000,
+            messages: [{
+              role: 'user',
+              content: `Create an educational explanation about "${selectedTopic}" at a ${selectedLevel} level. 
+              
+              Structure your response as follows:
+              1. Start with a clear, engaging introduction appropriate for the ${selectedLevel} level
+              2. Cover 3-4 key concepts or aspects
+              3. Include relevant examples
+              4. End with practical takeaways or next steps
+              
+              Adjust the depth, vocabulary, and technical detail based on the level:
+              - Basic: Simple language, everyday analogies, foundational concepts only
+              - Intermediate: More technical terms, assumes basic knowledge, deeper explanations
+              - Advanced: Technical language, complex concepts, assumes strong foundation
+              - Expert: Highly technical, cutting-edge topics, assumes expert background
+              
+              Format your response in clean HTML with appropriate headings and paragraphs. Use <h3> for section headers and <p> for paragraphs.`
+            }]
+          })
+        });
+
+        const data = await response.json();
+        const content = data.content
+          .map(item => item.type === 'text' ? item.text : '')
+          .join('\n');
+
+        contentArea.innerHTML = `
+          <div class="content-header">
+            <h2 class="content-title">${selectedTopic}</h2>
+            <div class="content-meta">
+              <span class="meta-badge">📚 Level: ${selectedLevel.charAt(0).toUpperCase() + selectedLevel.slice(1)}</span>
+              <span class="meta-badge">⏱️ 5-10 min read</span>
+            </div>
+          </div>
+          <div class="content-body">
+            ${content}
+          </div>
+        `;
+      } catch (error) {
+        contentArea.innerHTML = `
+          <div class="loading">
+            <p style="color: var(--accent);">Sorry, there was an error generating the content. Please try again.</p>
+          </div>
+        `;
+      }
+    });
+
+    // Back button
+    backBtn.addEventListener('click', () => {
+      contentSection.classList.remove('active');
+      document.querySelector('.search-section').scrollIntoView({ behavior: 'smooth' });
+    });
+  </script>
+</body>
+</html>
