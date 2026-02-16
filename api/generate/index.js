@@ -16,7 +16,7 @@ module.exports = async function (context, req) {
   }
 
   // Check for required environment variable
-  const apiKey = process.env.ANTHROPIC_API_KEY;
+  const apiKey = process.env.GOOGLE_API_KEY;
   if (!apiKey) {
     context.res = {
       status: 500,
@@ -44,19 +44,15 @@ module.exports = async function (context, req) {
   }
 
   try {
-    const response = await fetch('https://api.anthropic.com/v1/messages', {
+    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'x-api-key': apiKey,
-        'anthropic-version': '2023-06-01'
       },
       body: JSON.stringify({
-        model: 'claude-sonnet-4-20250514',
-        max_tokens: 1000,
-        messages: [{
-          role: 'user',
-          content: `Create an educational explanation about "${topic}" at a ${level} level. 
+        contents: [{
+          parts: [{
+            text: `Create an educational explanation about "${topic}" at a ${level} level. 
           
           Structure your response as follows:
           1. Start with a clear, engaging introduction appropriate for the ${level} level
@@ -71,6 +67,7 @@ module.exports = async function (context, req) {
           - Expert: Highly technical, cutting-edge topics, assumes expert background
           
           Format your response in clean HTML with appropriate headings and paragraphs. Use <h3> for section headers and <p> for paragraphs.`
+          }]
         }]
       })
     });
@@ -89,9 +86,7 @@ module.exports = async function (context, req) {
       return;
     }
 
-    const content = data.content
-      .map(item => item.type === 'text' ? item.text : '')
-      .join('\n');
+    const content = data.candidates?.[0]?.content?.parts?.[0]?.text || 'No response generated';
 
     context.res = {
       status: 200,

@@ -4,6 +4,7 @@
   "description": "An interactive learning app with AI-powered explanations at multiple levels",
   "main": "index.html",
   "scripts": {
+    "dev": "node dev-server.js",
     "build": "echo 'Build complete'",
     "test": "echo \"No tests configured\" && exit 0"
   },
