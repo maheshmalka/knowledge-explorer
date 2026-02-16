@@ -496,11 +496,6 @@
   <script>
     let selectedTopic = '';
     let selectedLevel = '';
-    
-    // API endpoint - will use localhost in dev, Vercel in production
-    const API_URL = window.location.hostname === 'localhost' 
-      ? 'http://localhost:3000/api/generate'
-      : 'https://knowledge-explorer-api.vercel.app/api/generate-vercel';
 
     const searchInput = document.getElementById('searchInput');
     const topicChips = document.querySelectorAll('.topic-chip');
@@ -569,7 +564,7 @@
       contentSection.scrollIntoView({ behavior: 'smooth' });
 
       try {
-        const response = await fetch(API_URL, {
+        const response = await fetch('http://localhost:3000/api/generate', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
