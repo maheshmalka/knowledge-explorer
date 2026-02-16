@@ -1,0 +1,10 @@
+{
+  "name": "knowledge-explorer",
+  "version": "1.0.0",
+  "description": "Knowledge Explorer - ASP.NET Core API with Google AI Integration",
+  "scripts": {
+    "build": "dotnet build",
+    "build:azure": "dotnet build -c Release && dotnet publish -c Release -o ./bin/Release/publish",
+    "start": "dotnet run"
+  }
+}
