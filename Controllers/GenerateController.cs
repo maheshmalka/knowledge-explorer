@@ -68,7 +68,8 @@ Format your response in clean HTML with appropriate headings and paragraphs. Use
             var url = $"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-lite:generateContent?key={apiKey}";
             
             var response = await _httpClient.PostAsJsonAsync(url, requestBody);
-            var responseContent = await response.Content.ReadAsAsync<GoogleApiResponse>();
+            var jsonContent = await response.Content.ReadAsStringAsync();
+            var responseContent = System.Text.Json.JsonSerializer.Deserialize<GoogleApiResponse>(jsonContent);
 
             if (!response.IsSuccessStatusCode)
             {
