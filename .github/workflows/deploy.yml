@@ -14,7 +14,8 @@ jobs:
       - name: Inject Grok API Key
         env:
           GROK_API_KEY: ${{ secrets.GROK_API_KEY }}
-        run: printf 'const CONFIG = { grokApiKey: "%s" };\n' "$GROK_API_KEY" > config.js
+        run: |
+          printf 'const CONFIG = { grokApiKey: "%s" };\n' "$GROK_API_KEY" > config.js
 
       - name: Deploy to Azure Static Web Apps
         uses: Azure/static-web-apps-deploy@v1
